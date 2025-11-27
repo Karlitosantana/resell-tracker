@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Trash2, DollarSign } from 'lucide-react';
+import { Edit, Trash2, DollarSign, Image as ImageIcon } from 'lucide-react';
 
 export function InventoryList({ items, onEdit, onDelete, onSell }) {
     if (items.length === 0) {
@@ -14,7 +14,16 @@ export function InventoryList({ items, onEdit, onDelete, onSell }) {
     return (
         <div className="grid gap-4">
             {items.map(item => (
-                <div key={item.id} className="card flex flex-col md:flex-row justify-between gap-4 animate-fade-in">
+                <div key={item.id} className="card flex flex-col md:flex-row gap-4 animate-fade-in">
+                    {/* Image Thumbnail */}
+                    <div className="w-full md:w-24 h-24 bg-secondary/20 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center">
+                        {item.image ? (
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <ImageIcon size={24} className="text-secondary/50" />
+                        )}
+                    </div>
+
                     <div className="flex-1">
                         <div className="flex justify-between items-start">
                             <h3 className="text-lg font-bold">{item.name}</h3>

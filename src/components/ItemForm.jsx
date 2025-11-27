@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Save, X } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Save, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { resizeImage } from '../utils/image';
 
 export function ItemForm({ onSave, onCancel, initialData = {} }) {
     const [formData, setFormData] = useState({
@@ -7,8 +8,29 @@ export function ItemForm({ onSave, onCancel, initialData = {} }) {
         purchasePrice: initialData.purchasePrice || '',
         purchaseSource: initialData.purchaseSource || '',
         purchaseDate: initialData.purchaseDate || new Date().toISOString().split('T')[0],
-        notes: initialData.notes || ''
+        notes: initialData.notes || '',
+        image: initialData.image || null
     });
+
+    const fileInputRef = useRef(null);
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                const resizedImage = await resizeImage(file);
+                setFormData(prev => ({ ...prev, image: resizedImage }));
+            } catch (error) {
+                console.error("Error resizing image:", error);
+                alert("Nepodařilo se nahrát obrázek.");
+            }
+        }
+    };
+
+    const removeImage = () => {
+        setFormData(prev => ({ ...prev, image: null }));
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -28,6 +50,39 @@ export function ItemForm({ onSave, onCancel, initialData = {} }) {
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {/* Image Upload Section */}
+                <div className="flex justify-center mb-2">
+                    <div
+                        className="relative w-full h-48 bg-secondary/20 rounded-lg border-2 border-dashed border-secondary/30 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors overflow-hidden"
+                        onClick={() => !formData.image && fileInputRef.current.click()}
+                    >
+                        {formData.image ? (
+                            <>
+                                <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); removeImage(); }}
+                                    className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white hover:bg-red-500 transition-colors"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </>
+                        ) : (
+                            <div className="text-center p-4">
+                                <Upload size={32} className="mx-auto mb-2 text-secondary" />
+                                <p className="text-sm text-secondary">Klikněte pro nahrání fotky</p>
+                            </div>
+                        )}
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                        />
+                    </div>
+                </div>
+
                 <div>
                     <label className="block text-sm text-secondary mb-1">Název předmětu</label>
                     <input
